@@ -2,16 +2,21 @@ import React, {Component} from 'react';
 
 class History extends React.Component {
   render() {
-    const moves = this.props.history.map((move, index) => {
+    if (!this.props.isAsc) {
+      this.props.history.reverse();
+    }
+
+    const buttons = this.props.history.map((move, index) => {
       const row = move.square % 3 + 1;
       const column = Math.floor(move.square / 3) + 1;
-      const desc = move.step ? `${row}, ${column}: ${move.symbol}` : 'Open Board';
+      const symbol = (move.step) ? this.props.history[move.step - 1].symbol : null;
+      const desc = move.step ? `${symbol}: ${row}, ${column}` : 'Open Board';
 
       return (
-        <li key={index}>
+        <li key={move.step}>
           <button
-          onClick={() => this.getStep(move.step)}
-          className={(move.step === this.props.step) ? 'boreold' : ''}
+          onClick={() => {this.props.handleStepClick(move.step)}}
+          className={(move.step === this.props.step) ? 'bold' : ''}
           >
             {desc}
           </button>
@@ -20,15 +25,18 @@ class History extends React.Component {
     });
 
     return (
-      <ol>
+      <div>
         <p>{this.props.history[this.props.step].status}</p>
         <p
         className="csrPointer"
-        onClick={() => {this.toggleIsAsc()}}
+        onClick={() => {this.props.handleReorderClick()}}
         >
           Order by: {(this.props.isAsc) ? 'Ascending' : 'Descending'}
         </p>
-      </ol>
+        <ol>
+          {buttons}
+        </ol>
+      </div>
     );
   }
 }

@@ -18,7 +18,7 @@ class Board extends React.Component {
     }
 
     return (
-      <div>
+      <div className={this.props.className}>
         {rows}
       </div>
     )

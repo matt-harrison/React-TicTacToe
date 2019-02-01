@@ -12,7 +12,7 @@ class Game extends React.Component {
         square: null,
         status: null,
         step: 0,
-        symbol: ''
+        symbol: null
       }],
       isAsc: true,
       step: 0,
@@ -22,6 +22,39 @@ class Game extends React.Component {
 
     this.state.history[0].symbol = this.state.symbols[0];
     this.state.history[0].status = 'First Move: ' + this.state.symbols[0];
+  }
+
+  checkSquare(i) {
+    const step = this.state.step + 1;
+    const history = this.state.history.slice(0, step);
+    const currentBoard = history[this.state.step].board.slice();
+    let winner = this.checkStatus(currentBoard);
+
+    if (!winner && !currentBoard[i]) {
+      let status = 'Next move: ' + (currentBoard.symbol === this.state.symbols[0] ? this.state.symbols[0] : this.state.symbols[1]);
+      const symbol = history[this.state.step].symbol;
+
+      currentBoard[i] = symbol;
+
+      winner = this.checkStatus(currentBoard);
+
+      if (winner) {
+        status = 'Winner: ' + history[this.state.step].symbol;
+      } else if (step >= 9) {
+        status = `Cat's game.`;
+      }
+
+      this.setState({
+        history: history.concat([{
+          board: currentBoard,
+          square: i,
+          status: status,
+          step: step,
+          symbol: this.getNextSymbol(symbol)
+        }]),
+        step: history.length,
+      });
+    }
   }
 
   checkStatus(board) {
@@ -53,7 +86,7 @@ class Game extends React.Component {
   }
 
   getNextSymbol(symbol) {
-    return (symbol === this.state.symbols[1]) ? this.state.symbols[0] : this.state.symbols[1];
+    return (symbol !== this.state.symbols[0]) ? this.state.symbols[0] : this.state.symbols[1];
   }
 
   getStep(step) {
@@ -64,37 +97,6 @@ class Game extends React.Component {
     });
 
     this.checkStatus(currentBoard);
-  }
-
-  handleClick(i) {
-    const step = this.state.step + 1;
-    const history = this.state.history.slice(0, step);
-    const currentBoard = history[this.state.step].board.slice();
-    let winner = this.checkStatus(currentBoard);
-    let status = 'Next player: ' + (currentBoard.symbol === this.state.symbols[0] ? this.state.symbols[0] : this.state.symbols[1]);
-
-    if (!winner && !currentBoard[i]) {
-      const symbol = history[this.state.step].symbol;
-
-      currentBoard[i] = symbol;
-
-      if (this.checkStatus(currentBoard)) {
-        status = 'Winner: ' + winner;
-      } else if (step >= 9) {
-        status = `Cat's game.`;
-      }
-
-      this.setState({
-        history: history.concat([{
-          board: currentBoard,
-          square: i,
-          status: status,
-          step: step,
-          symbol: this.getNextSymbol(symbol)
-        }]),
-        step: history.length,
-      });
-    }
   }
 
   toggleIsAsc() {
@@ -109,20 +111,19 @@ class Game extends React.Component {
     let history = this.state.history.slice();
     const currentBoard = history[this.state.step].board;
 
-    if (!this.state.isAsc) {
-      history = history.reverse();
-    }
-
     return (
       <div className="game">
         <Board
         board={currentBoard}
-        onClick={i => {this.handleClick(i)}}
+        className="mr10"
+        onClick={i => {this.checkSquare(i)}}
         winningSquares={this.state.winningSquares}
         />
         <History
-        history={this.state.history}
+        history={history}
         isAsc={this.state.isAsc}
+        handleReorderClick={step => {this.toggleIsAsc()}}
+        handleStepClick={step => {this.getStep(step)}}
         step={this.state.step}
         />
       </div>

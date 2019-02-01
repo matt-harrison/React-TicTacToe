@@ -8,6 +8,10 @@ class Square extends React.Component {
       css += ' bgGreen';
     }
 
+    if (!this.props.value) {
+      css += ' csrPointer';
+    }
+
     return (
       <div
       className={css}
